@@ -12,22 +12,11 @@ sudo apt install
     libglfw3-dev
     libglew-dev
     libglm-dev
-    libimgui-dev
 ```
-
-### Preflight
-
-For preflighting build in a Docker image
-
-```
-sudo docker build -t demo-solitaire-gl -f ./Docker/Dockerfile.pop_os .
-```
-
 
 ### NIX
 
 For nix, had to use this command
-
 
 ```
 nix-channel --add https://github.com/nix-community/nixGL/archive/main.tar.gz nixgl && nix-channel --update
@@ -35,3 +24,12 @@ nix-channel --add https://github.com/nix-community/nixGL/archive/main.tar.gz nix
 # Had to use explicit version
 nix-env -iA nixgl.auto.nixGLNvidia --argstr nvidiaVersion 580.82.09
 ```
+
+
+### Refs
+
+C++ Bindings for OpenGL: https://github.com/cginternals/glbinding/
+
+GLFW: https://www.glfw.org/
+
+Mesa: https://mesa3d.org/
