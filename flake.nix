@@ -31,6 +31,7 @@
           # Core graphics stack
           libGL
           libGLU
+          glfw
 
           # NVIDIA driver runtime (matches what you already have on the host)
           # `linuxPackages.nvidia_x11` works for the *current* kernel
