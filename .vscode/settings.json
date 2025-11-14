@@ -1,0 +1,7 @@
+{
+    "nixEnvSelector.nixFile": "${workspaceFolder}/flake.nix",
+    "files.associations": {
+        "flake.lock": "json",
+        "system_error": "cpp"
+    }
+}
