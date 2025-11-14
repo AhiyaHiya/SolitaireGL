@@ -89,6 +89,17 @@
           '';
         };
 
+        # A lightweight dev shell that uses host/System libraries for graphics.
+        # Use `nix develop .#host` to get a shell with just build tools (cmake, ninja, gcc)
+        # so you can build and run against the system's OpenGL / GLX / GLFW.
+        devShells.host = pkgs.mkShell {
+          inherit nativeBuildInputs;
+          shellHook = ''
+            echo "Host devShell: using system libraries for runtime (no Nix OpenGL libs)."
+            echo "Build with: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug && cmake --build build"
+          '';
+        };
+
         # `nix build .#` → reproducible package
         packages.default = pkgs.stdenv.mkDerivation baseDerivation;
       });
