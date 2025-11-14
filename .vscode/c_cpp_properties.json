@@ -1,7 +1,7 @@
 {
   "configurations": [
     {
-      "name": "Nix (flake devShell)",
+      "name": "Linux",
       "compileCommands": "${workspaceFolder}/build/compile_commands.json",
       "compilerPath": "/usr/bin/clang",
       "cppStandard": "c++23",
