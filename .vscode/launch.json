@@ -2,14 +2,36 @@
   "version": "0.2.0",
   "configurations": [
     {
-        "name": "Debug (local build)",
-        "type": "lldb",
-        "request": "launch",
-        "program": "${workspaceFolder}/build/solitaire",
-        "args": [],
-        "stopOnEntry": false,
-        "cwd": "${workspaceFolder}",
-        "preLaunchTask": "cmake: build only"   // or just run nix develop first
+      "name": "Debug (Nix + LLDB + Symbols)",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/result/bin/solitaire",
+      "cwd": "${workspaceFolder}",
+      "stopOnEntry": false,
+      "sourceLanguages": ["cpp"],
+      "preLaunchTask": "nix: build",
+      "initCommands": [
+        "settings set target.source-map /build/source ${workspaceFolder}",
+        "target create ${workspaceFolder}/result/bin/solitaire"
+      ],
+      "env": {
+        "LD_LIBRARY_PATH": "/nix/store/dj06r96j515npcqi9d8af1d1c60bx2vn-gcc-14.3.0-lib/lib:${env:LD_LIBRARY_PATH}"
+      }
+    },
+    {
+      "name": "Debug (Host libs)",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/solitaire",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopOnEntry": false,
+      "sourceLanguages": ["cpp"],
+      "preLaunchTask": "host: build",
+      "initCommands": [
+        "settings set target.source-map /build/source ${workspaceFolder}",
+        "target create ${workspaceFolder}/build/solitaire"
+      ]
     }
   ]
 }
