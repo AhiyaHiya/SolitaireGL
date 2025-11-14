@@ -1,6 +1,5 @@
 {
-  description = "My C++ project built with Nix + NVIDIA";
-
+  description = "Solitaire C++ project built with Nix + NVIDIA";
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
@@ -12,8 +11,8 @@
         pkgs = import nixpkgs {
           inherit system;
           config = {
-            allowUnfree = true;               # needed for NVIDIA drivers
-            cudaSupport = true;               # enables CUDA toolkit
+            allowUnfree = true; # needed for NVIDIA drivers
+            cudaSupport = true; # enables CUDA toolkit
           };
         };
 
@@ -24,7 +23,9 @@
         nativeBuildInputs = with pkgs; [
           cmake
           ninja
-          gcc                       # or clang, maybe later
+          gcc # or clang
+          gdb
+          lldb
         ];
 
         buildInputs = with pkgs; [
@@ -32,43 +33,63 @@
           libGL
           libGLU
           glfw
-
-          # NVIDIA driver runtime (matches what you already have on the host)
-          # `linuxPackages.nvidia_x11` works for the *current* kernel
+          # Ensure C++ runtime (libstdc++) is available at runtime
+          gcc
+          stdenv.cc.cc.lib
+          # NVIDIA driver runtime
           linuxPackages.nvidia_x11
-
-          # If CUDA libraries are needed in build:
+          # Add CUDA runtime if needed:
           # cudaPackages.cudatoolkit
-          # cudaPackages.cuda_nvcc
         ];
 
-      in {
-        # `nix develop` → interactive shell with everything on PATH
-        devShells.default = pkgs.mkShell {
-          inherit buildInputs nativeBuildInputs;
-          # Make sure the driver libraries are found at runtime
-          LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
-        };
-
-        # `nix build` → reproducible package
-        packages.default = pkgs.stdenv.mkDerivation {
-          pname = "solitaire_gl";
+        # Common derivation settings
+        baseDerivation = {
+          pname = "solitaire";
           version = "0.1.0";
-
           src = ./.;
-
           inherit nativeBuildInputs buildInputs;
 
+          # --- DEBUG SYMBOLS ---
+          separateDebugInfo = true;  # Creates $debug output with .debug files
+          dontStrip = true;          # Keep symbols in the main binary
+
           cmakeFlags = [
-            "-DCMAKE_BUILD_TYPE=Release"
+            "-DCMAKE_BUILD_TYPE=Debug"  # Critical for source-level debugging
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
           ];
 
-          # For driver libs at *runtime* inside the Nix store:
+          # Fix rpath so binary finds libs at runtime (outside nix develop)
           postFixup = ''
-            patchelf --set-rpath ${
-              pkgs.lib.makeLibraryPath buildInputs
-            } $out/bin/*
+            for bin in $out/bin/*; do
+              if [ -f "$bin" ] && [ -x "$bin" ]; then
+                patchelf --set-rpath "${
+                  pkgs.lib.makeLibraryPath buildInputs
+                }" "$bin" || true
+              fi
+            done
+          '';
+
+          postInstall = ''
+          ln -s $out/share/compile_commands.json ${placeholder "out"}/compile_commands.json || true
+          # or simply copy it to $out for a dev link
+        '';
+        };
+
+      in {
+        # `nix develop` → interactive shell
+        devShells.default = pkgs.mkShell {
+          inherit buildInputs nativeBuildInputs;
+          # Optional: help runtime inside shell
+          LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
+
+          shellHook = ''
+            echo "Nix devShell ready!"
+            echo "Run: nix build .#"
+            echo "     code ."
           '';
         };
+
+        # `nix build .#` → reproducible package
+        packages.default = pkgs.stdenv.mkDerivation baseDerivation;
       });
 }
