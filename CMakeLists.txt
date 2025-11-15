@@ -9,12 +9,17 @@ find_package(OpenGL REQUIRED)
 find_package(glfw3  CONFIG REQUIRED)
 find_package(GLEW REQUIRED)
 
-add_executable(solitaire Game/main.cpp)
+add_executable(solitaire
+    Game/deck_of_cards.cpp
+    Game/deck_of_cards.hpp
+    Game/main.cpp
+)
+
 target_link_libraries(solitaire
     PRIVATE
-        OpenGL::GL
         glfw
         GLEW::GLEW
+        OpenGL::GL
 )
 
 install(TARGETS solitaire
